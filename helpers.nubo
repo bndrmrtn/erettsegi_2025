@@ -1,0 +1,68 @@
+// import io from Nubo's standard library
+import { open } from "@std/io"
+
+// loadData loads data from kiadas.txt
+fn loadData() []any {
+    const file = open("kiadas.txt")
+    const data: []any = []
+
+    // go through each line in the file
+    for line in file.readAll().split("\n") {
+        line = line.trim()
+        // skip empty lines
+        if line == "" {
+            continue
+        }
+
+        // convert line to a list
+        const parts = line.split(";")
+        const description = parts[3]
+
+        let descriptionParts: []string = []
+        if description.includes("(") {
+            const split = description.split("(")
+            const author = split[1]
+            descriptionParts.push(author.substring(0, author.length() - 1))
+            descriptionParts.push(split[0])
+        } else {
+            const split = description.split(": ")
+            descriptionParts.push(split[0])
+            if split.length() > 1 {
+                descriptionParts.push(split[1])
+            } else {
+                descriptionParts.push("")
+            }
+        }
+
+        const build: []any = [int(parts[0]), int(parts[1]), parts[2], description, descriptionParts, int(parts[4])]
+        data.push(build)
+    }
+
+    // close the file
+    file.close()
+
+    // return the data
+    return data
+}
+
+// task prints the task number
+fn task(id: int) void {
+    println(`{id}. feladat`)
+}
+
+// max returns the maximum value in a list of integers
+fn max(li: []int) int {
+    if li.length() == 0 {
+        return 0;
+    }
+
+    let max = li[0]
+    for i in li.length() {
+        const val = li[i]
+        if val > max {
+            max = val
+        }
+    }
+
+    return max
+}

@@ -1,0 +1,134 @@
+// include "helpers.nubo" // include could also work, but import only imports the necessary objects
+import { loadData, task, max } from "helpers"
+import io from "@std/io"
+
+// Task 1.
+const data = loadData()
+
+task(2)
+const input = io.read("Szerző: ")
+let count = 0
+
+for item in data {
+    const author = item[4][0]
+    if author.includes(input) {
+        count++
+    }
+}
+
+if count > 0 {
+    println(`{count} könyvkiadás`)
+} else {
+    println("Nem adtak ki")
+}
+
+task(3)
+let publishCounts: []int = []
+for item in data {
+    publishCounts.push(item[5])
+}
+const publishMax = max(publishCounts)
+let publishMaxCount = 0
+for item in data {
+    const count = item[5]
+    if count == publishMax {
+        publishMaxCount++
+    }
+}
+
+println(`Legnagyobb példányszám: {publishMax}, előfordult {publishMaxCount} alkalommal`)
+
+task(4)
+for item in data {
+    const count = item[5]
+    const locale = item[2]
+    if count >= 40000 && locale == "kf" {
+        println(`{item[0]}/{item[1]}. {item[3]}`)
+        break
+    }
+}
+
+task(5)
+const years: dict[int, any] = {}
+for item in data {
+    const year = item[0]
+    if !years.keys().includes(year) {
+        years[year] = {}
+    }
+
+    const locale = item[2]
+    const currentYear = years[year]
+    if !currentYear.keys().includes(locale) {
+        years[year][locale] = [0, 0]
+    }
+
+    const published = years[year][locale][0]
+    const count = years[year][locale][1]
+    const itemCount = item[5]
+    published++
+
+    // TODO: improve nubo to allow calculation with bracket accessor api
+    years[year][locale][0] = published
+    years[year][locale][1] = count + itemCount
+}
+
+println("Év\tMagyar kiadás\tMagyar példányszám\tKülföldi kiadás\tKülföldi példányszám")
+for year, data in years {
+    println(string(year) + "\t\t" + string(data['ma'][0]) + "\t\t" + string(data['ma'][1]) + "\t\t" + string(data['kf'][0]) + "\t\t" + string(data['kf'][1]))
+}
+
+const tableData: []html = []
+for year, data in years {
+    tableData.push(<tr>
+        <td>{year}</td>
+        <td>{data['ma'][0]}</td>
+        <td>{data['ma'][1]}</td>
+        <td>{data['kf'][0]}</td>
+        <td>{data['kf'][1]}</td>
+    </tr>)
+}
+
+const table = <table>
+    <tr>
+        <th>Év</th>
+        <th>Magyar kiadás</th>
+        <th>Magyar példányszám</th>
+        <th>Külföldi kiadás</th>
+        <th>Külföldi példányszám</th>
+    </tr>
+    @{tableData.join("")}
+</table>
+
+io.writeFile(__dir__ + "/tabla.html", table)
+
+task(6)
+let copies = {}
+
+for item in data {
+    if copies.keys().includes(item[3]) {
+        const cp = copies[item[3]]
+        cp.push(item[5])
+        copies[item[3]] = cp
+    } else {
+        copies[item[3]] = [item[5]]
+    }
+}
+
+println("Legalább kétszer, nagyobb példányszámban újra kiadott könyvek:")
+for item, cp in copies {
+    let bigger = 0
+    let period = 1
+
+    while period < cp.length() && bigger < 2 {
+        let pp = cp[period]
+        let p0 = cp[0]
+        if pp > p0 {
+            bigger++
+        }
+        period++
+    }
+
+    if bigger >= 2 {
+        println(item)
+    }
+}
