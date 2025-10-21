@@ -96,7 +96,7 @@ const table = <table>
         <th>Külföldi kiadás</th>
         <th>Külföldi példányszám</th>
     </tr>
-    @{tableData.join("")}
+    !{tableData.join("")}
 </table>
 
 io.writeFile(__dir__ + "/tabla.html", table)
